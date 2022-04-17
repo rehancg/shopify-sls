@@ -1,5 +1,4 @@
-# NOTE: update this with your service name
-service: serverless-nodejs-starter
+service: shopify-node-serverless
 
 # Create an optimized package for our functions 
 package:
@@ -8,7 +7,11 @@ package:
 plugins:
   - serverless-bundle # Package our functions with Webpack
   - serverless-offline
-  - serverless-dotenv-plugin # Load .env as environment variables
+
+custom:
+  bundle:
+    linting: false
+    caching: false
 
 provider:
   name: aws
@@ -19,14 +22,24 @@ provider:
   # rename env.example to .env and uncomment
   # the following line. Also, make sure to not
   # commit your .env.
-  #
-  #environment:
-  #  SAMPLE_ENV_VAR: ${env:SAMPLE_ENV_VAR}
+  environment:
+    SHOPIFY_API_KEY: ${file(./config.${opt:stage, 'dev'}.json):SHOPIFY_API_KEY}
+    SHOPIFY_API_SECRET_KEY: ${file(./config.${opt:stage, 'dev'}.json):SHOPIFY_API_SECRET_KEY}
+    SHOPIFY_SCOPES: ${file(./config.${opt:stage, 'dev'}.json):SHOPIFY_SCOPES}
+    SHOPIFY_HOST: ${file(./config.${opt:stage, 'dev'}.json):SHOPIFY_HOST}
+    SHOPIFY_APP_NAME: ${file(./config.${opt:stage, 'dev'}.json):SHOPIFY_APP_NAME}
 
 functions:
-  hello:
-    handler: handler.hello
+  auth:
+    handler: handler.auth
     events:
       - http:
-          path: hello
+          path: auth
+          method: get
+
+  authCallback:
+    handler: handler.authCallback
+    events:
+      - http:
+          path: auth/callback
           method: get
